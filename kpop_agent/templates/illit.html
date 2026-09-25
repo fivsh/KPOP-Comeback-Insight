@@ -1,0 +1,1312 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ILLIT · K-POP Comeback Analysis</title>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+    margin:0;
+    font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",Arial,sans-serif;
+    color:#24365d;
+    background:
+        radial-gradient(circle at 22% 8%,rgba(255,255,255,.92),transparent 28%),
+        linear-gradient(135deg,#d6dde2 0%,#e9edf1 45%,#e8dff0 100%);
+    min-height:100vh;
+}
+
+/* 左侧导航 */
+.sidebar{
+    position:fixed;
+    left:0;
+    top:0;
+    bottom:0;
+    width:142px;
+    z-index:100;
+    color:white;
+    padding:26px 8px;
+    background:
+        linear-gradient(180deg,rgba(41,51,64,.96),rgba(62,76,91,.91)),
+        url("/static/illit.jpg") center/cover;
+    box-shadow:8px 0 30px rgba(25,34,47,.14);
+}
+.sidebar:after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:rgba(35,47,61,.36);
+    pointer-events:none;
+}
+.sidebar>*{position:relative;z-index:2}
+.logo{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    padding:0 18px;
+    height:45px;
+    font-size:21px;
+    font-weight:700;
+    letter-spacing:.5px;
+}
+.logo-mark{font-size:25px;color:#fff}
+.nav{margin-top:27px;display:flex;flex-direction:column;gap:9px}
+.nav-item{
+    height:47px;
+    padding:0 17px;
+    border-radius:26px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    color:rgba(255,255,255,.76);
+    cursor:pointer;
+    transition:.22s;
+    font-size:14px;
+}
+.nav-item i{width:20px;text-align:center;font-size:18px}
+.nav-item:hover,.nav-item.active{
+    background:rgba(235,237,255,.28);
+    color:#fff;
+}
+.sidebar-note{
+    position:absolute;
+    bottom:30px;
+    left:38px;
+    color:rgba(255,255,255,.78);
+    font-family:cursive;
+    font-size:14px;
+    line-height:1.5;
+    transform:rotate(-7deg);
+    white-space:pre-line;
+}
+.sidebar-heart{margin-left:30px}
+
+/* 主体 */
+.main{margin-left:142px;min-height:100vh}
+.page{max-width:1500px;margin:auto;position:relative}
+
+/* Hero */
+.hero{
+    height:315px;
+    position:relative;
+    overflow:hidden;
+    color:white;
+    background-image:
+        linear-gradient(90deg,rgba(31,40,50,.48) 0%,rgba(31,40,50,.18) 45%,rgba(31,40,50,.05) 100%),
+        linear-gradient(180deg,rgba(24,30,37,.05),rgba(24,30,37,.2)),
+        url("/static/illit.jpg");
+    background-size:cover;
+    background-position:center 48%;
+}
+.hero:before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:radial-gradient(circle at 20% 75%,rgba(255,255,255,.3),transparent 24%);
+}
+.hero-top{
+    position:absolute;
+    top:25px;
+    left:31px;
+    right:28px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    z-index:2;
+}
+.hero-mini-logo{
+    font-size:14px;
+    letter-spacing:2px;
+    font-weight:700;
+}
+.hero-mini-logo span{font-size:18px}
+.hero-links{
+    display:flex;
+    gap:13px;
+    font-size:12px;
+    letter-spacing:1px;
+}
+.hero-content{
+    position:absolute;
+    left:76px;
+    top:73px;
+    z-index:2;
+}
+.hero-title{
+    margin:0;
+    font-family:cursive;
+    font-size:91px;
+    line-height:.9;
+    font-weight:500;
+    font-style:italic;
+    letter-spacing:4px;
+    text-shadow:0 5px 14px rgba(0,0,0,.12);
+}
+.hero-star{
+    display:inline-block;
+    margin-left:17px;
+    font-size:32px;
+    transform:rotate(-15deg);
+}
+.hero-subtitle{
+    margin:8px 0 5px;
+    font-family:cursive;
+    font-size:28px;
+    font-style:italic;
+    letter-spacing:1px;
+}
+.hero-desc{
+    font-size:15px;
+    line-height:1.8;
+    color:rgba(255,255,255,.94);
+    text-shadow:0 1px 5px rgba(0,0,0,.25);
+}
+.hero-deco{
+    position:absolute;
+    right:58px;
+    bottom:72px;
+    font-family:cursive;
+    font-size:29px;
+    font-style:italic;
+    transform:rotate(-9deg);
+}
+.hero-deco:after{
+    content:"♡";
+    margin-left:8px;
+    font-size:25px;
+}
+.hero-star-right{
+    position:absolute;
+    right:25px;
+    bottom:47px;
+    font-size:31px;
+    transform:rotate(-15deg);
+}
+
+/* 内容容器 */
+.content{
+    margin-top:-8px;
+    padding:0 22px 40px;
+    position:relative;
+    z-index:5;
+}
+.glass{
+    background:linear-gradient(135deg,rgba(255,255,255,.88),rgba(245,248,252,.75));
+    border:1px solid rgba(255,255,255,.95);
+    box-shadow:0 10px 32px rgba(52,67,93,.10),inset 0 1px 0 rgba(255,255,255,.95);
+    backdrop-filter:blur(20px);
+    border-radius:16px;
+}
+
+/* 顶部数据 */
+.overview{
+    min-height:213px;
+    display:grid;
+    grid-template-columns:1.02fr 1.98fr;
+    overflow:hidden;
+}
+.group-info{
+    padding:31px 24px;
+    display:flex;
+    gap:25px;
+    align-items:center;
+}
+.group-photo{
+    width:133px;
+    height:158px;
+    object-fit:cover;
+    border-radius:16px;
+    flex-shrink:0;
+    box-shadow:0 8px 22px rgba(42,51,68,.16);
+}
+.group-info h2{
+    margin:0 0 9px;
+    color:#183264;
+    font-size:21px;
+}
+.group-info p{
+    margin:0;
+    max-width:360px;
+    font-size:12px;
+    line-height:1.85;
+    color:#64718d;
+}
+.group-tags{display:flex;gap:8px;margin-top:11px}
+.group-tag{
+    padding:5px 10px;
+    border-radius:13px;
+    background:#edf1f8;
+    color:#596b89;
+    font-size:10px;
+}
+
+.status{
+    padding:23px 18px 20px 14px;
+    border-left:1px solid rgba(221,226,235,.65);
+}
+.section-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#173464;
+    font-weight:700;
+    font-size:14px;
+    margin-bottom:13px;
+}
+.section-title i{color:#936be0}
+.status-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:13px;
+}
+.stat{
+    height:150px;
+    border-radius:13px;
+    padding:14px 16px 10px;
+    background:rgba(255,255,255,.69);
+    border:1px solid rgba(224,228,237,.82);
+    position:relative;
+    overflow:hidden;
+}
+.stat-top{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    color:#66738e;
+    font-size:11px;
+}
+.stat-icon{
+    width:26px;
+    height:26px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:16px;
+}
+.stat:nth-child(1) .stat-icon{color:#ff3d62}
+.stat:nth-child(2) .stat-icon{color:#1697ed}
+.stat:nth-child(3) .stat-icon{color:#8059e7}
+.stat:nth-child(4) .stat-icon{color:#5e6db5}
+.stat-value{
+    margin-top:9px;
+    color:#16346c;
+    font-size:21px;
+    font-weight:700;
+}
+.stat-change{
+    margin-top:5px;
+    font-size:10px;
+    color:#45a977;
+}
+.stat-sub{
+    margin-top:3px;
+    font-size:10px;
+    color:#687692;
+}
+.mini-chart{height:44px;width:100%;position:absolute;bottom:0;left:0}
+
+/* Agent */
+.agent-panel{
+    margin-top:14px;
+    padding:13px 9px 13px;
+}
+.agent-panel .section-title{padding-left:7px;margin-bottom:9px}
+.agent-grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:11px;
+}
+.agent{
+    height:177px;
+    border-radius:15px;
+    padding:18px 16px;
+    position:relative;
+    overflow:hidden;
+    cursor:pointer;
+    transition:.22s;
+    border:1px solid rgba(255,255,255,.7);
+}
+.agent:hover{
+    transform:translateY(-3px);
+    box-shadow:0 12px 25px rgba(62,73,100,.12);
+}
+.agent:after{
+    content:"";
+    position:absolute;
+    right:-15px;
+    top:8px;
+    width:92px;
+    height:92px;
+    border-radius:50%;
+    background:rgba(255,255,255,.28);
+}
+.a-pink{background:linear-gradient(145deg,#fae7ee,#f8eef5)}
+.a-purple{background:linear-gradient(145deg,#e9e8fb,#edf0fc)}
+.a-green{background:linear-gradient(145deg,#def2ed,#e7f6f1)}
+.a-lavender{background:linear-gradient(145deg,#ece9fc,#f1effd)}
+.a-blue{background:linear-gradient(145deg,#e3f0fa,#eaf5fc)}
+.agent-icon{
+    width:40px;
+    height:40px;
+    border-radius:13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:21px;
+    background:rgba(255,255,255,.7);
+    position:relative;
+    z-index:2;
+    margin-bottom:16px;
+}
+.a-pink .agent-icon{color:#f02e67}
+.a-purple .agent-icon{color:#6f64e9}
+.a-green .agent-icon{color:#42bda5}
+.a-lavender .agent-icon{color:#795fe4}
+.a-blue .agent-icon{color:#0f91e6}
+.agent h3{
+    position:relative;
+    z-index:2;
+    margin:0;
+    font-size:15px;
+    color:#16336b;
+}
+.agent-en{
+    position:relative;
+    z-index:2;
+    margin-top:3px;
+    color:#7685a2;
+    font-size:9px;
+}
+.agent p{
+    position:relative;
+    z-index:2;
+    margin:12px 0 0;
+    color:#75809a;
+    font-size:10px;
+    line-height:1.7;
+    max-width:165px;
+}
+.agent-arrow{
+    position:absolute;
+    right:14px;
+    bottom:14px;
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    background:rgba(255,255,255,.45);
+    z-index:3;
+}
+.a-pink .agent-arrow{background:#e28bae}
+.a-purple .agent-arrow{background:#8197df}
+.a-green .agent-arrow{background:#61c5b4}
+.a-lavender .agent-arrow{background:#9795e1}
+.a-blue .agent-arrow{background:#6fc0ec}
+
+/* 下方 */
+.bottom-grid{
+    display:grid;
+    grid-template-columns:1.72fr .82fr .70fr;
+    gap:13px;
+    margin-top:13px;
+}
+.lifecycle,.result,.recent{min-height:210px;padding:17px 18px}
+.lifecycle-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+.lifecycle-head .sub{
+    font-weight:400;
+    color:#75829b;
+}
+.lifecycle-code{
+    margin-left:auto;
+    color:#9670c9;
+    font-size:10px;
+}
+.timeline{
+    margin:57px 10px 0;
+    display:flex;
+    justify-content:space-between;
+    position:relative;
+}
+.timeline:before{
+    content:"";
+    position:absolute;
+    top:14px;
+    left:14px;
+    right:14px;
+    height:2px;
+    background:linear-gradient(90deg,#a9d7f2,#c5d6f4,#e3bde4);
+}
+.phase{
+    width:12.5%;
+    position:relative;
+    z-index:2;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+.phase-dot{
+    width:29px;
+    height:29px;
+    border-radius:50%;
+    background:#e6eff7;
+    border:3px solid white;
+    box-shadow:0 0 0 1px #cbdbe9;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#516d92;
+    font-size:9px;
+    font-weight:700;
+}
+.phase.active .phase-dot{
+    width:38px;
+    height:38px;
+    margin-top:-4px;
+    background:linear-gradient(135deg,#aa4ab9,#8e57d1);
+    color:#fff;
+    box-shadow:0 0 0 4px rgba(179,90,202,.18),0 5px 15px rgba(151,72,182,.25);
+}
+.phase-name{
+    margin-top:8px;
+    text-align:center;
+    font-size:9px;
+    line-height:1.45;
+    color:#69758d;
+}
+.phase.active .phase-name{color:#a04bb6;font-weight:700}
+.current-badge{
+    position:absolute;
+    top:-38px;
+    padding:5px 8px;
+    border-radius:10px;
+    background:#a64db9;
+    color:white;
+    font-size:8px;
+    white-space:nowrap;
+}
+.current-badge:after{
+    content:"";
+    position:absolute;
+    left:50%;
+    bottom:-5px;
+    transform:translateX(-50%);
+    border-left:5px solid transparent;
+    border-right:5px solid transparent;
+    border-top:5px solid #a64db9;
+}
+
+/* AI result */
+.result-content{
+    height:135px;
+    padding:10px 3px;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+}
+.result-icon{
+    width:42px;
+    height:42px;
+    flex-shrink:0;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#725ce0;
+    background:#f0edff;
+    font-size:21px;
+}
+.result-text{
+    font-size:10px;
+    line-height:1.8;
+    color:#6c7890;
+}
+.result-text strong{color:#536181}
+.result-button{
+    border:0;
+    border-radius:20px;
+    padding:9px 15px;
+    background:#ede9ff;
+    color:#755bd2;
+    font-size:10px;
+    cursor:pointer;
+}
+
+/* 最近数据 */
+.recent-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+.more{
+    color:#6b75d4;
+    font-size:9px;
+    cursor:pointer;
+}
+.recent table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:5px;
+}
+.recent th{
+    text-align:left;
+    font-size:8px;
+    color:#8993a9;
+    padding:6px 2px;
+    font-weight:500;
+}
+.recent td{
+    font-size:8px;
+    color:#65718b;
+    padding:6px 2px;
+    border-top:1px solid rgba(226,230,238,.8);
+}
+.title-cell{
+    max-width:120px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+/* 弹窗 */
+.loading{
+    position:fixed;
+    inset:0;
+    z-index:999;
+    background:rgba(30,39,52,.38);
+    backdrop-filter:blur(6px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.loading-box{
+    background:white;
+    border-radius:18px;
+    padding:25px 35px;
+    box-shadow:0 20px 50px rgba(0,0,0,.18);
+    text-align:center;
+    color:#59657d;
+    font-size:13px;
+}
+.spinner{
+    width:35px;
+    height:35px;
+    margin:0 auto 12px;
+    border:3px solid #e7e7f0;
+    border-top-color:#9564ca;
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.modal-mask{
+    position:fixed;
+    inset:0;
+    z-index:1000;
+    background:rgba(25,32,43,.48);
+    backdrop-filter:blur(8px);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:25px;
+}
+.modal{
+    width:min(800px,95vw);
+    max-height:82vh;
+    overflow:auto;
+    padding:28px;
+    background:rgba(255,255,255,.97);
+    border-radius:22px;
+    box-shadow:0 30px 70px rgba(0,0,0,.25);
+}
+.modal-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+.modal-title{font-size:20px;color:#193466;font-weight:700}
+.close{
+    border:0;
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    background:#edf0f5;
+    color:#64708a;
+    cursor:pointer;
+}
+.analysis{
+    white-space:pre-wrap;
+    color:#5e6a83;
+    font-size:13px;
+    line-height:2;
+}
+
+/* 响应式 */
+@media(max-width:1180px){
+    .status-grid{grid-template-columns:repeat(2,1fr)}
+    .overview{grid-template-columns:1fr}
+    .status{border-left:0;border-top:1px solid rgba(221,226,235,.65)}
+    .agent-grid{grid-template-columns:repeat(3,1fr)}
+    .bottom-grid{grid-template-columns:1fr 1fr}
+    .recent{grid-column:1/-1}
+}
+@media(max-width:760px){
+    .sidebar{width:64px}
+    .sidebar .logo span,.nav-item span,.sidebar-note{display:none}
+    .nav-item{justify-content:center;padding:0}
+    .main{margin-left:64px}
+    .hero-content{left:30px}
+    .hero-title{font-size:68px}
+    .hero-subtitle{font-size:20px}
+    .agent-grid{grid-template-columns:1fr 1fr}
+    .bottom-grid{grid-template-columns:1fr}
+}
+@media(max-width:520px){
+    .content{padding:0 10px 30px}
+    .hero{height:350px}
+    .group-info{flex-direction:column;align-items:flex-start}
+    .status-grid{grid-template-columns:1fr}
+    .agent-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+{% verbatim %}
+<div id="app">
+
+<!-- 左侧导航 -->
+<aside class="sidebar">
+    <div class="logo">
+        <span class="logo-mark">✦</span>
+        <span>ILLIT</span>
+    </div>
+
+    <nav class="nav">
+        <div class="nav-item active" @click="scrollTo('home')">
+            <i class="fa-solid fa-house"></i><span>首页</span>
+        </div>
+        <div class="nav-item" @click="scrollTo('data')">
+            <i class="fa-solid fa-database"></i><span>数据采集</span>
+        </div>
+        <div class="nav-item" @click="scrollTo('agents')">
+            <i class="fa-solid fa-chart-column"></i><span>数据分析</span>
+        </div>
+        <div class="nav-item" @click="scrollTo('history')">
+            <i class="fa-solid fa-clock-rotate-left"></i><span>历史记录</span>
+        </div>
+    </nav>
+
+    <div class="sidebar-note">ILLIT
+Always
+with you
+<span class="sidebar-heart">♡</span></div>
+</aside>
+
+<main class="main">
+<div class="page">
+
+<!-- Hero -->
+<section id="home" class="hero">
+    <div class="hero-top">
+        <div class="hero-mini-logo"><span>✦</span> ILLIT</div>
+        <div class="hero-links">
+            <span>ILLIT</span><span>×</span><span>AI</span><span>×</span><span>DATA</span><span>♡</span>
+        </div>
+    </div>
+
+    <div class="hero-content">
+        <div>
+            <span class="hero-title">ILLIT</span>
+            <span class="hero-star">☆</span>
+        </div>
+        <div class="hero-subtitle">K-POP COMEBACK ANALYSIS</div>
+        <div class="hero-desc">回归数据 · 舆情分析 · 营销策略 · 生命周期诊断</div>
+    </div>
+
+    <div class="hero-deco">Magnetic</div>
+    <div class="hero-star-right">☆</div>
+</section>
+
+<div class="content">
+
+<!-- ILLIT 概览 + 实时数据 -->
+<section class="glass overview">
+
+    <div class="group-info">
+        <img src="{% static 'illit.jpg' %}" class="group-photo" alt="ILLIT">
+
+        <div>
+            <h2>ILLIT ✦</h2>
+            <p>
+                ILLIT（아일릿）是 BELIFT LAB 推出的五人女子组合，以清新、梦幻的视觉风格与青春感音乐受到关注。
+                本页面聚焦 ILLIT 回归期间的网络热度、舆情与生命周期变化。
+            </p>
+            <div class="group-tags">
+                <span class="group-tag">#ILLIT</span>
+                <span class="group-tag">#K-POP</span>
+                <span class="group-tag">#Magnetic</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="status">
+        <div class="section-title">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            ILLIT 当前回归状态
+        </div>
+
+        <div class="status-grid">
+
+            <div class="stat">
+                <div class="stat-top">
+                    <div class="stat-icon"><i class="fa-solid fa-fire"></i></div>
+                    <span>当前热度</span>
+                </div>
+                <div class="stat-value">{{ formatNumber(totalViews) }}</div>
+                <div class="stat-change">↑ 实时数据</div>
+                <div class="mini-chart" id="heatChart"></div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-top">
+                    <div class="stat-icon"><i class="fa-brands fa-youtube"></i></div>
+                    <span>视频数量</span>
+                </div>
+                <div class="stat-value">{{ posts.length }}</div>
+                <div class="stat-change">↑ Bilibili 数据</div>
+                <div class="mini-chart" id="videoChart"></div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-top">
+                    <div class="stat-icon"><i class="fa-regular fa-comment-dots"></i></div>
+                    <span>内容讨论</span>
+                </div>
+                <div class="stat-value">ACTIVE</div>
+                <div class="stat-change">↑ 舆论活跃</div>
+                <div class="mini-chart" id="discussionChart"></div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-top">
+                    <div class="stat-icon"><i class="fa-regular fa-clock"></i></div>
+                    <span>回归阶段</span>
+                </div>
+                <div class="stat-value">{{ currentPhase }}</div>
+                <div class="stat-sub">{{ currentPhaseName }}</div>
+                <div class="mini-chart" id="phaseChart"></div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Agent -->
+<section id="agents" class="glass agent-panel">
+    <div class="section-title">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        AI 智能体分析
+    </div>
+
+    <div class="agent-grid">
+
+        <div class="agent a-pink" @click="sendAnalysis('heat')">
+            <div class="agent-icon"><i class="fa-solid fa-fire"></i></div>
+            <h3>回归热度分析</h3>
+            <div class="agent-en">COMEBACK HEAT</div>
+            <p>分析播放数量、热度峰值<br>与传播趋势</p>
+            <div class="agent-arrow">→</div>
+        </div>
+
+        <div class="agent a-purple" @click="sendAnalysis('persona')">
+            <div class="agent-icon"><i class="fa-solid fa-users"></i></div>
+            <h3>大众画像与舆论分析</h3>
+            <div class="agent-en">AUDIENCE & PUBLIC OPINION</div>
+            <p>分析受众特征、粉丝画像<br>与舆情走势</p>
+            <div class="agent-arrow">→</div>
+        </div>
+
+        <div class="agent a-green" @click="sendAnalysis('strategy')">
+            <div class="agent-icon"><i class="fa-solid fa-bullseye"></i></div>
+            <h3>营销策略建议</h3>
+            <div class="agent-en">MARKETING STRATEGY</div>
+            <p>基于数据生成<br>运营与推广建议</p>
+            <div class="agent-arrow">→</div>
+        </div>
+
+        <div class="agent a-lavender" @click="sendAnalysis('overview')">
+            <div class="agent-icon"><i class="fa-solid fa-file-lines"></i></div>
+            <h3>数据概览</h3>
+            <div class="agent-en">DATA OVERVIEW</div>
+            <p>查看当前回归<br>核心数据</p>
+            <div class="agent-arrow">→</div>
+        </div>
+
+        <div class="agent a-blue" @click="sendAnalysis('lifecycle')">
+            <div class="agent-icon"><i class="fa-solid fa-rotate"></i></div>
+            <h3>回归生命周期诊断</h3>
+            <div class="agent-en">LIFECYCLE ANALYSIS</div>
+            <p>P0 - P7<br>回归阶段智能诊断</p>
+            <div class="agent-arrow">→</div>
+        </div>
+
+    </div>
+</section>
+
+<!-- 生命周期 + AI结果 + B站数据 -->
+<div class="bottom-grid">
+
+<section id="lifecycle" class="glass lifecycle">
+    <div class="lifecycle-head section-title">
+        <i class="fa-solid fa-arrows-spin"></i>
+        <span>COMEBACK LIFECYCLE</span>
+        <span class="sub">回归生命周期</span>
+        <span class="lifecycle-code">P0 — P7</span>
+    </div>
+
+    <div class="timeline">
+
+        <div class="phase" :class="{active:currentPhase==='P0'}">
+            <div v-if="currentPhase==='P0'" class="current-badge">当前阶段</div>
+            <div class="phase-dot">P0</div>
+            <div class="phase-name">未识别</div>
+        </div>
+
+        <div class="phase" :class="{active:currentPhase==='P1'}">
+            <div v-if="currentPhase==='P1'" class="current-badge">当前阶段</div>
+            <div class="phase-dot">P1</div>
+            <div class="phase-name">概念照<br>期</div>
+        </div>
+
+        <div class="phase" :class="{active:currentPhase==='P2'}">
+            <div v-if="currentPhase==='P2'" class="current-badge">当前阶段</div>
+            <div class="phase-dot">P2</div>
+            <div class="phase-name">曲目列表<br>期</div>
+        </div>
+
+        <div class="phase" :class="{active:currentPhase==='P3'}">
+            <div v-if="currentPhase==='P3'" class="current-badge">当前阶段</div>
+            <div class="phase-dot">P3</div>
+            <div class="phase-name">预告期</div>
+        </div>
+
+        <div class="phase" :class="{active:currentPhase==='P4'}">
+            <div v-if="currentPhase==='P4'" class="current-badge">当前阶段</div>
+            <div class="phase-dot">P4</div>
+            <div class="phase-name">专辑发布<br>期</div>
+        </div>
+
+        <div class="phase" :class="{active:currentPhase==='P5'}">
+            <div v-if="currentPhase==='P5'" class="current-badge">当前阶段</div>
+            <div class="phase-dot">P5</div>
+            <div class="phase-name">MV发布期</div>
+        </div>
+
+        <div class="phase" :class="{active:currentPhase==='P6'}">
+            <div v-if="currentPhase==='P6'" class="current-badge">当前阶段</div>
+            <div class="phase-dot">P6</div>
+            <div class="phase-name">打歌期</div>
+        </div>
+
+        <div class="phase" :class="{active:currentPhase==='P7'}">
+            <div v-if="currentPhase==='P7'" class="current-badge">当前阶段</div>
+            <div class="phase-dot">P7</div>
+            <div class="phase-name">后续活动期</div>
+        </div>
+
+    </div>
+</section>
+
+<section class="glass result">
+    <div class="section-title">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        AI 分析结果
+    </div>
+
+    <div class="result-content">
+        <div class="result-icon">
+            <i class="fa-solid fa-brain"></i>
+        </div>
+
+        <div class="result-text">
+            <template v-if="currentResult">
+                <strong>{{ currentResult.title || '智能体分析' }}</strong><br>
+                {{ getResultText(currentResult).slice(0,180) }}
+            </template>
+
+            <template v-else>
+                基于当前数据，ILLIT 正处于回归关注阶段。
+                系统将结合 Bilibili 数据、舆情与多平台联动，
+                进一步观察其回归传播与受众覆盖面。
+            </template>
+        </div>
+    </div>
+
+    <button class="result-button" v-if="currentResult" @click="showModal=true">
+        查看完整分析 →
+    </button>
+</section>
+
+<section id="data" class="glass recent">
+    <div class="recent-head">
+        <div class="section-title" style="margin-bottom:0">
+            <i class="fa-brands fa-bilibili"></i>
+            近期 B站数据
+        </div>
+        <div class="more">查看更多 →</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>标题</th>
+                <th>播放量</th>
+                <th>发布时间</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="(post,index) in posts.slice(0,5)" :key="post.id || index">
+                <td class="title-cell">{{ post.title || 'ILLIT 相关视频' }}</td>
+                <td>{{ formatNumber(post.view_count || post.views || post.play_count || 0) }}</td>
+                <td>{{ formatDate(post.pubdate || post.created_at || post.publish_time) }}</td>
+            </tr>
+
+            <tr v-if="posts.length===0">
+                <td colspan="3" style="text-align:center">暂无数据</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+</div>
+
+<!-- 隐藏历史锚点 -->
+<div id="history" style="position:relative;top:-80px"></div>
+
+</div>
+</div>
+</main>
+
+<!-- Loading -->
+<div class="loading" v-if="loading">
+    <div class="loading-box">
+        <div class="spinner"></div>
+        <div>AI Agent 正在分析 ILLIT 数据...</div>
+    </div>
+</div>
+
+<!-- 分析弹窗 -->
+<div class="modal-mask" v-if="showModal" @click.self="showModal=false">
+    <div class="modal">
+        <div class="modal-head">
+            <div class="modal-title">{{ currentResult?.title || 'ILLIT 智能分析结果' }}</div>
+            <button class="close" @click="showModal=false">×</button>
+        </div>
+        <div class="analysis">{{ getResultText(currentResult) }}</div>
+    </div>
+</div>
+
+</div>
+{% endverbatim %}
+
+<script>
+const {createApp,ref,computed,onMounted}=Vue;
+
+createApp({
+    setup(){
+        const posts=ref([]);
+        const loading=ref(false);
+        const currentResult=ref(null);
+        const showModal=ref(false);
+
+        // 保留你原项目的 P0-P7 生命周期展示
+        const currentPhase=ref('P5');
+
+        const phaseNames={
+            P0:'未识别',
+            P1:'概念照期',
+            P2:'曲目列表期',
+            P3:'预告期',
+            P4:'专辑发布期',
+            P5:'MV发布期',
+            P6:'打歌期',
+            P7:'后续活动期'
+        };
+
+        const currentPhaseName=computed(()=>{
+            return phaseNames[currentPhase.value]||'回归阶段';
+        });
+
+        const totalViews=computed(()=>{
+            return posts.value.reduce((sum,post)=>{
+                return sum+Number(
+                    post.view_count||
+                    post.views||
+                    post.play_count||
+                    0
+                );
+            },0);
+        });
+
+        const formatNumber=num=>{
+            num=Number(num||0);
+
+            if(num>=100000000){
+                return (num/100000000).toFixed(1)+'亿';
+            }
+
+            if(num>=10000){
+                return (num/10000).toFixed(1)+'万';
+            }
+
+            return num.toLocaleString();
+        };
+
+        const formatDate=date=>{
+            if(!date)return '-';
+
+            try{
+                const d=new Date(date);
+                if(isNaN(d.getTime())){
+                    return String(date).slice(0,10);
+                }
+
+                return d.toLocaleDateString('zh-CN',{
+                    year:'numeric',
+                    month:'2-digit',
+                    day:'2-digit'
+                });
+            }catch(e){
+                return String(date).slice(0,10);
+            }
+        };
+
+        // 获取你现有数据库对应的 B站数据接口
+        const fetchPosts=async()=>{
+            try{
+                const res=await fetch('/api/posts/');
+
+                if(!res.ok){
+                    throw new Error('数据接口请求失败');
+                }
+
+                const data=await res.json();
+
+                if(Array.isArray(data)){
+                    posts.value=data;
+                }else if(Array.isArray(data.posts)){
+                    posts.value=data.posts;
+                }else if(Array.isArray(data.results)){
+                    posts.value=data.results;
+                }else{
+                    posts.value=[];
+                }
+
+            }catch(e){
+                console.error('获取B站数据失败:',e);
+            }
+        };
+
+        // 获取你现有的历史分析接口
+        const fetchHistory=async()=>{
+            try{
+                const res=await fetch('/api/history/');
+
+                if(!res.ok)return;
+
+                const data=await res.json();
+
+                if(Array.isArray(data)&&data.length){
+                    currentResult.value=data[0];
+                }else if(
+                    data &&
+                    Array.isArray(data.history) &&
+                    data.history.length
+                ){
+                    currentResult.value=data.history[0];
+                }
+
+            }catch(e){
+                console.log('历史记录获取失败:',e);
+            }
+        };
+
+        // 与你原来的后端 /api/query/ 保持一致
+        const sendAnalysis=async type=>{
+            if(loading.value)return;
+
+            const typeNames={
+                heat:'回归热度分析',
+                persona:'大众画像与舆论分析',
+                strategy:'营销策略建议',
+                overview:'数据概览',
+                lifecycle:'回归生命周期诊断'
+            };
+
+            const typeName=typeNames[type]||'智能分析';
+
+            const questionText=
+                `请针对 ILLIT 进行${typeName}，请结合当前系统采集的 Bilibili 数据进行分析，给出具有数据依据的结论。`;
+
+            loading.value=true;
+
+            try{
+                const res=await fetch('/api/query/',{
+                    method:'POST',
+                    headers:{
+                        'Content-Type':'application/json'
+                    },
+                    body:JSON.stringify({
+                        question:questionText,
+                        type:type
+                    })
+                });
+
+                if(!res.ok){
+                    throw new Error('AI分析请求失败');
+                }
+
+                const data=await res.json();
+
+                currentResult.value=data;
+                showModal.value=true;
+
+                await fetchHistory();
+
+            }catch(e){
+                console.error(e);
+                alert('AI分析请求失败：'+e.message);
+            }finally{
+                loading.value=false;
+            }
+        };
+
+        const getResultText=result=>{
+            if(!result)return '';
+
+            if(typeof result==='string'){
+                return result;
+            }
+
+            return result.answer||
+                   result.content||
+                   result.result||
+                   result.message||
+                   '暂无分析内容';
+        };
+
+        const scrollTo=id=>{
+            const el=document.getElementById(id);
+
+            if(el){
+                el.scrollIntoView({
+                    behavior:'smooth',
+                    block:'start'
+                });
+            }
+        };
+
+        // 小型趋势图
+        const createMiniChart=(id,values)=>{
+            const el=document.getElementById(id);
+
+            if(!el||typeof echarts==='undefined'){
+                return;
+            }
+
+            const chart=echarts.init(el);
+
+            chart.setOption({
+                animation:true,
+                grid:{
+                    left:0,
+                    right:0,
+                    top:5,
+                    bottom:0
+                },
+                xAxis:{
+                    type:'category',
+                    show:false,
+                    data:values.map((_,i)=>i)
+                },
+                yAxis:{
+                    type:'value',
+                    show:false
+                },
+                series:[{
+                    type:'line',
+                    data:values,
+                    smooth:true,
+                    symbol:'none',
+                    lineStyle:{
+                        width:2
+                    },
+                    areaStyle:{
+                        opacity:.12
+                    }
+                }]
+            });
+        };
+
+        onMounted(async()=>{
+            await fetchPosts();
+            await fetchHistory();
+
+            setTimeout(()=>{
+                createMiniChart(
+                    'heatChart',
+                    [12,17,14,22,19,28,25,34,31,42]
+                );
+
+                createMiniChart(
+                    'videoChart',
+                    [9,11,13,12,16,18,17,23,22,28]
+                );
+
+                createMiniChart(
+                    'discussionChart',
+                    [8,10,9,14,12,18,16,21,20,26]
+                );
+
+                createMiniChart(
+                    'phaseChart',
+                    [5,7,8,11,10,16,19,23,22,28]
+                );
+            },300);
+        });
+
+        return{
+            posts,
+            loading,
+            currentResult,
+            showModal,
+            currentPhase,
+            currentPhaseName,
+            totalViews,
+            formatNumber,
+            formatDate,
+            sendAnalysis,
+            getResultText,
+            scrollTo
+        };
+    }
+}).mount('#app');
+</script>
+
+</body>
+</html>
